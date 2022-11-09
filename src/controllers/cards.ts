@@ -24,7 +24,6 @@ export const deleteCard = (req: Request, res: Response) => {
   card.findByIdAndRemove(req.params.cardId)
     .then((cardInformation) => res.status(200).send(cardInformation))
     .catch((err) => {
-      console.log(err.name);
       if (err.name === 'CastError') {
         return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
       }
@@ -40,7 +39,6 @@ export const addLikeCard = (req: Request, res: Response) => {
   )
     .then((cardInformation) => res.status(200).send(cardInformation))
     .catch((err) => {
-      console.log(err.name);
       if (err.name === 'CastError') {
         return res.status(ERROR_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
       }

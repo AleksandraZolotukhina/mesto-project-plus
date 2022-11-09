@@ -8,7 +8,7 @@ export const getCards = (_req: Request, res: Response) => {
     .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
 };
 
-export const createCard = (req: Request, res: Response) => {
+export const createCard = (req: any, res: Response) => {
   const { name, link } = req.body;
   card.create({ name, link, owner: req.user._id })
     .then((cardInformation) => res.status(200).send(cardInformation))
@@ -31,7 +31,7 @@ export const deleteCard = (req: Request, res: Response) => {
     });
 };
 
-export const addLikeCard = (req: Request, res: Response) => {
+export const addLikeCard = (req: any, res: Response) => {
   card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -49,7 +49,7 @@ export const addLikeCard = (req: Request, res: Response) => {
     });
 };
 
-export const deleteLikeCard = (req: Request, res: Response) => {
+export const deleteLikeCard = (req: any, res: Response) => {
   card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },

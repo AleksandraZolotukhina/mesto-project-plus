@@ -31,7 +31,7 @@ export const createUser = (req: Request, res: Response) => {
     });
 };
 
-export const updateUser = (req: Request, res: Response) => {
+export const updateUser = (req: any, res: Response) => {
   const { name, about } = req.body;
 
   user.findByIdAndUpdate(
@@ -53,7 +53,7 @@ export const updateUser = (req: Request, res: Response) => {
     });
 };
 
-export const updateUserAvatar = (req: Request, res: Response) => {
+export const updateUserAvatar = (req: any, res: Response) => {
   const { avatar } = req.body;
   user.findByIdAndUpdate(
     req.user._id,

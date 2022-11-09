@@ -11,7 +11,7 @@ app.use(express.urlencoded());
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
-app.use((req: Request, res: Response, next) => {
+app.use((req: any, res: Response, next) => {
   req.user = {
     _id: '6367cf71688a3a1d1059fc31',
   };

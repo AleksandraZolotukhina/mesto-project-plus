@@ -1,6 +1,25 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import user from '../models/user';
 import { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_SERVER } from '../utils/error';
+
+export const login = (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  return user.findUserByCredentials(email, password)
+    .then((userInformation) => {
+      res
+        .status(200)
+        .send({
+          token: jwt.sign({ _id: userInformation._id }, 'super-strong-secret', { expiresIn: '7d' }),
+        });
+    })
+    .catch((err) => {
+      res
+        .status(401)
+        .send({ message: err.message });
+    });
+};
 
 export const getUsers = (_req: Request, res: Response) => {
   user.find({})
@@ -20,8 +39,15 @@ export const getUser = (req: Request, res: Response) => {
 };
 
 export const createUser = (req: Request, res: Response) => {
-  const { name, about, avatar } = req.body;
-  user.create({ name, about, avatar })
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  return bcrypt.hash(password, 10)
+    .then((hash) => {
+      user.create({
+        name, about, avatar, email, password: hash,
+      });
+    })
     .then((newUser) => res.status(200).send(newUser))
     .catch((err) => {
       if (err.name === 'ValidationError') {

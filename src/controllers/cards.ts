@@ -5,10 +5,10 @@ import { ERROR_BAD_REQUEST, ERROR_NOT_FOUND, ERROR_SERVER } from '../utils/error
 export const getCards = (_req: Request, res: Response) => {
   card.find({})
     .then((cards) => res.status(200).send(cards))
-    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+    .catch(() => res.status(ERROR_SERVER).send({ message: 'На сервере произошла ошибка' }));
 };
 
-export const createCard = (req: any, res: Response) => {
+export const createCard = (req: Request, res: Response) => {
   const { name, link } = req.body;
   card.create({ name, link, owner: req.user._id })
     .then((cardInformation) => res.status(200).send(cardInformation))
@@ -31,7 +31,7 @@ export const deleteCard = (req: Request, res: Response) => {
     });
 };
 
-export const addLikeCard = (req: any, res: Response) => {
+export const addLikeCard = (req: Request, res: Response) => {
   card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -49,12 +49,17 @@ export const addLikeCard = (req: any, res: Response) => {
     });
 };
 
-export const deleteLikeCard = (req: any, res: Response) => {
+export const deleteLikeCard = (req: Request, res: Response) => {
   card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
     .then((cardInformation) => res.status(200).send(cardInformation))
-    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(ERROR_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
+      }
+      return res.status(ERROR_SERVER).send({ message: 'На сервере произошла ошибка' });
+    });
 };

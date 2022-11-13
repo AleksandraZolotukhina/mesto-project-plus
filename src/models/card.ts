@@ -4,7 +4,7 @@ interface ICardSchema{
   name: string,
   link: string,
   owner: mongoose.Types.ObjectId,
-  likes: ReadonlyArray<mongoose.Types.ObjectId>,
+  likes: Array<mongoose.Types.ObjectId>,
   createdAt: Date,
 }
 
@@ -22,10 +22,12 @@ const cardSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Types.ObjectId,
     required: true,
+    ref: 'user',
   },
   likes: [{
     type: mongoose.Types.ObjectId,
     default: [],
+    ref: 'user',
   }],
   createdAt: {
     type: Date,

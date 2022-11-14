@@ -2,7 +2,9 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import user from '../models/user';
-import { ERROR_BAD_REQUEST, ERROR_SERVER, ERROR_NOT_FOUND, ERROR_AUTHORIZATED } from '../utils/error';
+import {
+  ERROR_BAD_REQUEST, ERROR_SERVER, ERROR_NOT_FOUND, ERROR_AUTHORIZATED,
+} from '../utils/error';
 
 export const login = (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -20,7 +22,7 @@ export const login = (req: Request, res: Response) => {
     });
 };
 
-export const getUsers = (_req: Request, res: Response) => {
+export const getUsers = (req: Request, res: Response) => {
   user.find({})
     .then((users) => res.send(users))
     .catch(() => res.status(ERROR_SERVER).send({ message: 'На сервере произошла ошибка' }));
@@ -28,6 +30,23 @@ export const getUsers = (_req: Request, res: Response) => {
 
 export const getUser = (req: Request, res: Response) => {
   user.findById(req.params.userId)
+    .then((userInformation) => {
+      if (!userInformation) {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
+      } else {
+        res.send(userInformation);
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(ERROR_BAD_REQUEST).send({ message: 'Запрашиваемый id некорректен' });
+      }
+      return res.status(ERROR_SERVER).send({ message: 'На сервере произошла ошибка' });
+    });
+};
+
+export const getCurrentUser = (req: Request, res: Response) => {
+  user.findById(req.user._id)
     .then((userInformation) => {
       if (!userInformation) {
         res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });

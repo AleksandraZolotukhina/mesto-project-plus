@@ -5,7 +5,7 @@ declare global {
   namespace Express {
     // eslint-disable-next-line no-unused-vars
     interface Request {
-      user: {_id: JwtPayload};
+      user: {_id: JwtPayload | string};
     }
   }
 }

@@ -3,6 +3,7 @@ import {
 } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcrypt';
+import Unathorized from '../utils/errors/Unathorized';
 
 interface IUser {
   email: string,
@@ -28,6 +29,7 @@ const userSchema = new Schema<IUser, IUserModel>({
   },
   password: {
     type: String,
+    select: false,
     required: true,
   },
   name: {
@@ -45,19 +47,23 @@ const userSchema = new Schema<IUser, IUserModel>({
   avatar: {
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: {
+      validator: (avatar: string) => validator.isURL(avatar, { protocols: ['http', 'https'] }),
+      message: 'Некорректная ссылка',
+    },
   },
 });
 
 userSchema.static('findUserByCredentials', function findUserByCredentials(email: string, password: string) {
-  this.findOne({ email })
+  return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new Error('Неправильные почта или пароль');
+        return Promise.reject(new Unathorized('Неправильные почта или пароль'));
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new Error('Неправильные почта или пароль');
+            return Promise.reject(new Unathorized('Неправильные почта или пароль'));
           }
           return user;
         });

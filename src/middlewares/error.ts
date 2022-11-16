@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { ERROR_SERVER } from '../utils/error';
 
 export default (
   err: { statusCode: number, message: string },
@@ -6,15 +7,13 @@ export default (
   res: Response,
   next: NextFunction,
 ) => {
-  const { statusCode = 500, message } = err;
-
+  const { statusCode = ERROR_SERVER, message } = err;
   res
     .status(statusCode)
     .send({
-      message: statusCode === 500
+      message: statusCode === ERROR_SERVER
         ? 'На сервере произошла ошибка'
         : message,
     });
-
   next();
 };

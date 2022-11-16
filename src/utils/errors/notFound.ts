@@ -1,10 +1,10 @@
-class NotFoundError extends Error {
-  public statusCode: 404;
+import { ERROR_NOT_FOUND } from '../error';
+
+export default class NotFound extends Error {
+  public statusCode: typeof ERROR_NOT_FOUND;
 
   constructor(message: string) {
     super(message);
-    this.statusCode = 404;
+    this.statusCode = ERROR_NOT_FOUND;
   }
 }
-
-module.exports = NotFoundError;

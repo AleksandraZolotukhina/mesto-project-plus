@@ -1,23 +1,39 @@
 import { Joi, celebrate, Segments } from 'celebrate';
+import { isValidObjectId } from 'mongoose';
+import BadRequest from './errors/BadRequest';
 
-export const EMAIL_VALIDATION = Joi.string().required().email().messages({
+const EMAIL_VALIDATION = Joi.string().required().email().messages({
   'any.required': 'Email обязателен',
+  'string.empty': 'Email не может быть пустым',
 });
-export const PASSWORD_VALIDATION = Joi.string().required().messages({
+const PASSWORD_VALIDATION = Joi.string().required().messages({
   'any.required': 'Пароль обязателен',
+  'string.empty': 'Пароль не может быть пустым',
 });
-export const NAME_VALIDATION = Joi.string().min(2).max(30).messages({
+const NAME_VALIDATION = Joi.string().min(2).max(30).messages({
   'string.min': 'Имя не может быть короче 2 символов',
   'string.max': 'Имя не может быть длиннее 30 символов',
   'string.empty': 'Имя не может быть пустым',
 });
-export const ABOUT_VALIDATION = Joi.string().min(2).max(30).messages({
+const ABOUT_VALIDATION = Joi.string().min(2).max(30).messages({
   'string.min': 'About не может быть короче 2 символов',
   'string.max': 'About не может быть длиннее 30 символов',
   'string.empty': 'About не может быть пустым',
 });
-export const AVATAR_VALIDATION = Joi.string();
-export const LINK_VALIDATION = Joi.string().required().messages({ 'any.required': 'Ссылка обязательна' });
+const AVATAR_VALIDATION = Joi.string().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/).messages({
+  'any.required': 'Аватар обязателен',
+  'string.empty': 'Аватар не может быть пустым',
+  'string.pattern.base': 'Некорректная ссылка',
+});
+const LINK_VALIDATION = Joi.string().required().messages({
+  'any.required': 'Ссылка обязательна',
+});
+const ID_VALIDATION = Joi.string().required().custom((value) => {
+  if (isValidObjectId(value)) {
+    return value;
+  }
+  return new BadRequest('Запрашиваемый id некорректен');
+}, 'Id validation');
 
 export const signinValidation = celebrate({
   [Segments.BODY]: Joi.object().keys({
@@ -38,7 +54,7 @@ export const createUserValidation = celebrate({
 
 export const getUserValidation = celebrate({
   [Segments.PARAMS]: Joi.object().keys({
-    userId: Joi.string().required(),
+    userId: ID_VALIDATION,
   }),
 });
 
@@ -51,7 +67,7 @@ export const updateUserValidation = celebrate({
 
 export const updateUserAvatarValidation = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    avatar: AVATAR_VALIDATION,
+    avatar: AVATAR_VALIDATION.required(),
   }),
 });
 
@@ -64,6 +80,6 @@ export const createCardValidation = celebrate({
 
 export const cardValidation = celebrate({
   [Segments.PARAMS]: Joi.object().keys({
-    cardId: Joi.string().required(),
+    cardId: ID_VALIDATION,
   }),
 });

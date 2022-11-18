@@ -64,28 +64,28 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  user.findOne({ email })
-    .then((userInf) => {
-      if (userInf) {
-        throw new Conflict('Пользователь с таким email уже существует');
-      } else {
-        bcrypt.hash(password, 10)
-          .then((hash) => user.create({
-            name, about, avatar, email, password: hash,
-          }))
-          .then((userInformation) => {
-            res.send(userInformation);
-          })
-          .catch((err) => {
-            if (err.name === 'ValidationError') {
-              next(new BadRequest('Переданы некорректные данные при создании пользователя'));
-            } else {
-              next(err);
-            }
-          });
-      }
+  bcrypt.hash(password, 10)
+    .then((hash) => user.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((userInformation) => {
+      res.send({
+        _id: userInformation._id,
+        name: userInformation.name,
+        about: userInformation.about,
+        avatar: userInformation.avatar,
+        email: userInformation.email,
+      });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new Conflict('Пользователь с таким email уже существует'));
+      } else if (err.name === 'ValidationError') {
+        next(new BadRequest('Переданы некорректные данные при создании пользователя'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 export const updateUser = (req: Request, res: Response, next: NextFunction) => {
@@ -116,10 +116,6 @@ export const updateUser = (req: Request, res: Response, next: NextFunction) => {
 
 export const updateUserAvatar = (req: Request, res: Response, next: NextFunction) => {
   const { avatar } = req.body;
-
-  if (avatar === undefined) {
-    throw new BadRequest('Переданы некорректные данные при обновлении аватара');
-  }
 
   user.findByIdAndUpdate(
     req.user._id,
